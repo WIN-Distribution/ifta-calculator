@@ -645,9 +645,8 @@ body::before{
     dateRow.textContent = '';
     var row = document.createElement('div');
     row.className = 'crossing-row odo-single';
-    var today = new Date().toISOString().slice(0,10);
     var inp = document.createElement('input');
-    inp.type = 'date'; inp.id = 'tripDate'; inp.value = today;
+    inp.type = 'date'; inp.id = 'tripDate';
     row.appendChild(makeField('Trip Date', inp));
     dateRow.appendChild(row);
   }
@@ -792,7 +791,15 @@ body::before{
     else calcLocal();
   });
 
+  function checkDate(){
+    var d = document.getElementById('tripDate');
+    if(!d || !d.value){ if(d) d.classList.add('error'); showError('Please select the trip date.'); return false; }
+    d.classList.remove('error');
+    return true;
+  }
+
   function calcRoad(){
+    if(!checkDate()) return;
     var startEl = document.getElementById('start_odo');
     var endEl = document.getElementById('end_odo');
     var startVal = startEl.value.trim();
@@ -845,6 +852,7 @@ body::before{
   }
 
   function calcLocal(){
+    if(!checkDate()) return;
     var startEl = document.getElementById('local_start');
     var endEl = document.getElementById('local_end');
     var startVal = startEl.value.trim();
