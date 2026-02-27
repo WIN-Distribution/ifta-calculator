@@ -222,62 +222,30 @@ body::before{
   margin-bottom:14px;
   animation:rowIn 0.3s cubic-bezier(0.22,1,0.36,1) forwards;
 }
-.crossing-row.crossing-interactive{
-  grid-template-columns:1fr;
-  background:var(--ice-light);
-  border-radius:10px;padding:14px;
-  border:1px solid var(--ice);
-}
-.crossing-inner{
-  display:grid;grid-template-columns:1fr auto;gap:12px;
-  align-items:start;
-}
-.crossing-transition{
-  font-size:0.78rem;font-weight:700;color:var(--steel);
-  margin-bottom:8px;display:flex;align-items:center;gap:6px;
-  letter-spacing:0.02em;
-}
-.crossing-transition .from-st{
-  background:var(--navy);color:var(--pure-white);
-  font-family:'Space Mono',monospace;font-size:0.72rem;font-weight:700;
-  padding:3px 8px;border-radius:5px;letter-spacing:0.06em;
-}
-.crossing-transition .arrow{color:var(--steel-light);font-size:1rem}
-.crossing-transition .to-st{
-  background:var(--accent);color:var(--navy);
-  font-family:'Space Mono',monospace;font-size:0.72rem;font-weight:700;
-  padding:3px 8px;border-radius:5px;letter-spacing:0.06em;
-}
-.crossing-transition .to-st.empty{
-  background:var(--ice);color:var(--steel);
-  font-style:italic;font-family:'DM Sans',sans-serif;
-  font-weight:500;font-size:0.72rem;
-}
-.state-grid{
-  display:grid;grid-template-columns:repeat(3,1fr);gap:6px;
-}
-.state-grid-btn{
-  padding:10px 4px;
+.field select{
+  padding:12px 14px;
   border:2px solid var(--ice);border-radius:8px;
-  background:var(--pure-white);
-  font-family:'Space Mono',monospace;font-size:0.85rem;font-weight:700;
-  color:var(--navy);cursor:pointer;
-  transition:all 0.15s ease;
-  text-align:center;letter-spacing:0.04em;
+  font-family:'DM Sans',sans-serif;font-size:1rem;
+  color:var(--navy);background:var(--white);
+  transition:border-color 0.2s,box-shadow 0.2s;
+  outline:none;width:100%;
+  appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%233a5a8c' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;
+  background-position:right 14px center;
+  padding-right:36px;
 }
-.state-grid-btn:hover:not(.disabled):not(.active){
-  border-color:var(--steel-light);background:var(--white);
-  transform:scale(1.04);
+.field select:focus{
+  border-color:var(--steel-light);
+  box-shadow:0 0 0 3px rgba(90,127,173,0.12);
 }
-.state-grid-btn.active{
-  background:var(--accent);border-color:var(--accent);
-  color:var(--navy);box-shadow:0 2px 8px rgba(240,168,48,0.3);
-  transform:scale(1.04);
+.section-label{
+  font-family:'Space Mono',monospace;font-size:0.62rem;font-weight:700;
+  letter-spacing:0.12em;text-transform:uppercase;
+  color:var(--steel-light);margin:18px 0 6px;
 }
-.state-grid-btn.disabled{
-  opacity:0.25;cursor:not-allowed;
-  background:var(--ice-light);border-color:transparent;
-}
+.section-label:first-child{margin-top:0}
+.odo-single{grid-template-columns:1fr}
 @keyframes rowIn{
   from{opacity:0;transform:translateY(8px)}
   to{opacity:1;transform:translateY(0)}
@@ -478,8 +446,7 @@ body::before{
   .btn-row{flex-direction:column}
   .btn-actions{flex-direction:column}
   .crossing-row{gap:8px}
-  .crossing-inner{grid-template-columns:1fr}
-  .state-grid-btn{padding:12px 4px;font-size:0.9rem}
+  .crossing-row{grid-template-columns:1fr}
 }
 </style>
 </head>
@@ -556,44 +523,42 @@ body::before{
 </div>
 
 <script>
-/* All HTML set via innerHTML uses only hardcoded strings and
-   constant arrays (STATES). No user input is rendered as HTML. */
 (function(){
   'use strict';
+  /* All DOM content built from hardcoded constants — no user input rendered as HTML */
 
-  const STATES = ['CA','NV','AZ','UT','CO','ID'];
-  const PASSWORD = 'win2026';
-  const MAX_ROWS = 8;
+  var STATES = ['NV','CA','AZ','UT','CO','ID'];
+  var PASSWORD = 'win2026';
+  var MAX_LEAVING = 6;
 
-  let mode = 'road';
-  let terminal = 'la';
+  var mode = 'road';
+  var terminal = 'la';
 
   function homeState(){ return terminal === 'la' ? 'CA' : 'NV'; }
   function terminalName(){ return terminal === 'la' ? 'LA Terminal' : 'Las Vegas Terminal'; }
 
-  const loginOverlay = document.getElementById('loginOverlay');
-  const passwordInput = document.getElementById('passwordInput');
-  const loginBtn = document.getElementById('loginBtn');
-  const loginError = document.getElementById('loginError');
-  const app = document.getElementById('app');
-  const modeToggle = document.getElementById('modeToggle');
-  const formTitle = document.getElementById('formTitle');
-  const terminalSelector = document.getElementById('terminalSelector');
-  const container = document.getElementById('crossingsContainer');
-  const addBtnContainer = document.getElementById('addBtnContainer');
-  const addCrossingBtn = document.getElementById('addCrossingBtn');
-  const calcBtn = document.getElementById('calcBtn');
-  const resetBtn = document.getElementById('resetBtn');
-  const errorMsg = document.getElementById('errorMsg');
-  const errorText = document.getElementById('errorText');
-  const resultsCard = document.getElementById('resultsCard');
-  const resultsBody = document.getElementById('resultsBody');
-  const dateRow = document.getElementById('dateRow');
-  const clipboardGrid = document.getElementById('clipboardGrid');
-  const copyBtn = document.getElementById('copyBtn');
+  var loginOverlay = document.getElementById('loginOverlay');
+  var passwordInput = document.getElementById('passwordInput');
+  var loginBtn = document.getElementById('loginBtn');
+  var loginError = document.getElementById('loginError');
+  var app = document.getElementById('app');
+  var modeToggle = document.getElementById('modeToggle');
+  var formTitle = document.getElementById('formTitle');
+  var terminalSelector = document.getElementById('terminalSelector');
+  var dateRow = document.getElementById('dateRow');
+  var container = document.getElementById('crossingsContainer');
+  var addBtnContainer = document.getElementById('addBtnContainer');
+  var addCrossingBtn = document.getElementById('addCrossingBtn');
+  var calcBtn = document.getElementById('calcBtn');
+  var resetBtn = document.getElementById('resetBtn');
+  var errorMsg = document.getElementById('errorMsg');
+  var errorText = document.getElementById('errorText');
+  var resultsCard = document.getElementById('resultsCard');
+  var resultsBody = document.getElementById('resultsBody');
+  var clipboardGrid = document.getElementById('clipboardGrid');
+  var copyBtn = document.getElementById('copyBtn');
 
-  // Excel column order: TRIP# | START ODOM | END ODOM | AZ Miles | AZ Fuel | CA Miles | CA Fuel | ID Miles | ID Fuel | NV Miles | NV Fuel | UT Miles | UT Fuel
-  const EXCEL_STATES = ['AZ','CA','ID','NV','UT'];
+  var EXCEL_STATES = ['AZ','CA','ID','NV','UT'];
 
   /* ─── Login ─── */
   function tryLogin(){
@@ -601,7 +566,6 @@ body::before{
     if(val === PASSWORD){
       loginOverlay.classList.add('hidden');
       app.classList.add('visible');
-      passwordInput.classList.remove('error');
     } else {
       loginError.textContent = 'Incorrect password. Please try again.';
       passwordInput.classList.add('error');
@@ -610,9 +574,9 @@ body::before{
     }
   }
   loginBtn.addEventListener('click', tryLogin);
-  passwordInput.addEventListener('keydown', function(e){ if(e.key === 'Enter') tryLogin(); });
+  passwordInput.addEventListener('keydown', function(e){ if(e.key==='Enter') tryLogin(); });
 
-  /* ─── Mode Toggle ─── */
+  /* ─── Toggles ─── */
   modeToggle.addEventListener('click', function(e){
     var btn = e.target.closest('.toggle-btn');
     if(!btn || btn.classList.contains('active')) return;
@@ -621,8 +585,6 @@ body::before{
     mode = btn.dataset.mode;
     resetForm();
   });
-
-  /* ─── Terminal Toggle ─── */
   terminalSelector.addEventListener('click', function(e){
     var btn = e.target.closest('.terminal-btn');
     if(!btn || btn.classList.contains('active')) return;
@@ -632,29 +594,14 @@ body::before{
     resetForm();
   });
 
-  /* ─── Row builders (all content is from hardcoded constants) ─── */
-
-
-  function makeLockedDiv(state){
-    var d = document.createElement('div');
-    d.className = 'locked-state';
-    var icon = document.createElement('span');
-    icon.className = 'lock-icon';
-    icon.textContent = '\u{1F512}';
-    d.appendChild(icon);
-    d.appendChild(document.createTextNode(' ' + terminalName()));
-    return d;
-  }
-
+  /* ─── DOM Helpers ─── */
   function makeOdoInput(id, placeholder){
     var inp = document.createElement('input');
-    inp.type = 'number';
-    inp.id = id;
+    inp.type = 'number'; inp.id = id;
     inp.placeholder = placeholder || 'e.g. 50000';
-    inp.setAttribute('inputmode', 'numeric');
+    inp.setAttribute('inputmode','numeric');
     return inp;
   }
-
   function makeField(labelText, child){
     var f = document.createElement('div');
     f.className = 'field';
@@ -664,134 +611,43 @@ body::before{
     f.appendChild(child);
     return f;
   }
-
-  function addLockedRow(index, stateLabel, state, odoLabel){
-    var div = document.createElement('div');
-    div.className = 'crossing-row';
-    div.dataset.rowType = 'locked';
-    div.appendChild(makeField(stateLabel, makeLockedDiv(state)));
-    div.appendChild(makeField(odoLabel, makeOdoInput('odo_' + index)));
-    container.appendChild(div);
-  }
-
-  function getFromState(index){
-    // Walk backwards to find the previous row's state
-    var rows = container.children;
-    for(var i = index - 1; i >= 0; i--){
-      var row = rows[i];
-      if(!row) continue;
-      if(row.dataset.rowType === 'locked') return homeState();
-      var sel = row.querySelector('.state-grid-btn.active');
-      if(sel) return sel.dataset.state;
-    }
-    return homeState();
-  }
-
-  function addCrossingRow(index, crossingNum, selectedState){
-    var div = document.createElement('div');
-    div.className = 'crossing-row crossing-interactive';
-    div.dataset.rowType = 'crossing';
-    div.dataset.index = index;
-
-    // Transition label
-    var transLabel = document.createElement('div');
-    transLabel.className = 'crossing-transition';
-    transLabel.id = 'trans_' + index;
-
-    // State grid
-    var gridWrap = document.createElement('div');
-    var grid = document.createElement('div');
-    grid.className = 'state-grid';
-    grid.id = 'grid_' + index;
-
-    STATES.forEach(function(st){
-      var btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'state-grid-btn';
-      btn.dataset.state = st;
-      btn.textContent = st;
-      if(selectedState && st === selectedState) btn.classList.add('active');
-      grid.appendChild(btn);
+  function makeSelect(id, options, selected){
+    var sel = document.createElement('select');
+    sel.id = id;
+    options.forEach(function(s){
+      var opt = document.createElement('option');
+      opt.value = s; opt.textContent = s;
+      if(s === selected) opt.selected = true;
+      sel.appendChild(opt);
     });
-
-    // Click handler for grid
-    grid.addEventListener('click', function(e){
-      var btn = e.target.closest('.state-grid-btn');
-      if(!btn || btn.classList.contains('disabled')) return;
-      grid.querySelectorAll('.state-grid-btn').forEach(function(b){ b.classList.remove('active'); });
-      btn.classList.add('active');
-      updateAllTransitions();
-      // Auto-focus odometer if empty
-      var odoEl = document.getElementById('odo_' + index);
-      if(odoEl && !odoEl.value) odoEl.focus();
-    });
-
-    // Odometer
-    var odoField = makeField('Odometer at State Line', makeOdoInput('odo_' + index, 'e.g. 50270'));
-
-    var inner = document.createElement('div');
-    inner.className = 'crossing-inner';
-    gridWrap.appendChild(grid);
-    inner.appendChild(gridWrap);
-    inner.appendChild(odoField);
-
-    div.appendChild(transLabel);
-    div.appendChild(inner);
-    container.appendChild(div);
+    return sel;
+  }
+  function makeLabel(text){
+    var d = document.createElement('div');
+    d.className = 'section-label';
+    d.textContent = text;
+    return d;
   }
 
-  function updateAllTransitions(){
-    var rows = container.children;
-    for(var i = 0; i < rows.length; i++){
-      var row = rows[i];
-      if(row.dataset.rowType !== 'crossing') continue;
-      var idx = parseInt(row.dataset.index);
-      var trans = document.getElementById('trans_' + idx);
-      var grid = document.getElementById('grid_' + idx);
-      if(!trans || !grid) continue;
+  /* ─── Build Road Driver Form ─── */
+  /*
+    Structure:
+    - Starting Odometer (at terminal)
+    - Leaving [STATE] rows: dropdown + odometer at state line
+    - Ending Odometer (back at terminal)
 
-      var fromState = getFromState(idx);
-      var activeBtn = grid.querySelector('.state-grid-btn.active');
-      var toState = activeBtn ? activeBtn.dataset.state : null;
-
-      // Update transition label
-      trans.textContent = '';
-      var fromSpan = document.createElement('span');
-      fromSpan.className = 'from-st';
-      fromSpan.textContent = fromState;
-      var arrow = document.createElement('span');
-      arrow.className = 'arrow';
-      arrow.textContent = '\u2192';
-      var toSpan = document.createElement('span');
-      if(toState){
-        toSpan.className = 'to-st';
-        toSpan.textContent = toState;
-      } else {
-        toSpan.className = 'to-st empty';
-        toSpan.textContent = 'tap state';
-      }
-      trans.appendChild(fromSpan);
-      trans.appendChild(arrow);
-      trans.appendChild(toSpan);
-
-      // Disable the "from" state in the grid
-      grid.querySelectorAll('.state-grid-btn').forEach(function(btn){
-        btn.classList.remove('disabled');
-        if(btn.dataset.state === fromState) btn.classList.add('disabled');
-      });
-    }
-  }
-
-  /* ─── Road form: [Start locked] [Crossings...] [End locked] ─── */
+    Calc logic:
+    - leaving[0] miles = leaving[0].odo - startOdo  → attributed to leaving[0].state
+    - leaving[i] miles = leaving[i].odo - leaving[i-1].odo → attributed to leaving[i].state
+    - final miles = endOdo - leaving[last].odo → attributed to homeState
+  */
   function buildDateRow(){
     dateRow.textContent = '';
     var row = document.createElement('div');
-    row.className = 'date-row single';
+    row.className = 'crossing-row odo-single';
     var today = new Date().toISOString().slice(0,10);
     var inp = document.createElement('input');
-    inp.type = 'date';
-    inp.id = 'tripDate';
-    inp.value = today;
+    inp.type = 'date'; inp.id = 'tripDate'; inp.value = today;
     row.appendChild(makeField('Trip Date', inp));
     dateRow.appendChild(row);
   }
@@ -802,67 +658,79 @@ body::before{
     addBtnContainer.style.display = '';
     buildDateRow();
     container.textContent = '';
-    var hs = homeState();
-    addLockedRow(0, 'Starting State', hs, 'Starting Odometer');
-    addCrossingRow(1, 1, null);
-    addLockedRow(2, 'Ending State', hs, 'Ending Odometer');
-    updateAllTransitions();
+
+    // Starting odometer
+    container.appendChild(makeLabel(terminalName() + ' \u2014 Departure'));
+    var startRow = document.createElement('div');
+    startRow.className = 'crossing-row odo-single';
+    startRow.appendChild(makeField('Starting Odometer', makeOdoInput('start_odo','e.g. 143400')));
+    container.appendChild(startRow);
+
+    // First leaving row
+    container.appendChild(makeLabel('State Line Crossings'));
+    addLeavingRow(0);
+
+    // Ending odometer
+    addEndingRow();
+
     updateAddBtn();
   }
 
-  /* Collect current form data into an array */
-  function gatherRowData(){
-    var data = [];
-    var rows = container.children;
-    for(var i = 0; i < rows.length; i++){
-      var type = rows[i].dataset.rowType;
-      var odoEl = document.getElementById('odo_' + i);
-      var odoVal = odoEl ? odoEl.value : '';
-      if(type === 'locked'){
-        data.push({ type: 'locked', odo: odoVal });
-      } else {
-        var grid = document.getElementById('grid_' + i);
-        var activeBtn = grid ? grid.querySelector('.state-grid-btn.active') : null;
-        var stateVal = activeBtn ? activeBtn.dataset.state : '';
-        data.push({ type: 'crossing', state: stateVal, odo: odoVal });
-      }
+  function addLeavingRow(index, state, odo){
+    var row = document.createElement('div');
+    row.className = 'crossing-row';
+    row.dataset.rowType = 'leaving';
+    var defaultState = state || homeState();
+    row.appendChild(makeField('Leaving State', makeSelect('leaving_state_'+index, STATES, defaultState)));
+    row.appendChild(makeField('Odometer at State Line', makeOdoInput('leaving_odo_'+index,'e.g. 143940')));
+    if(odo) document.getElementById || (function(){ /* set after append */ })();
+
+    // Insert before the ending section (last 2 elements: label + row)
+    var endLabel = document.getElementById('endLabel');
+    if(endLabel){
+      container.insertBefore(row, endLabel);
+    } else {
+      container.appendChild(row);
     }
-    return data;
+
+    if(odo){
+      var el = document.getElementById('leaving_odo_'+index);
+      if(el) el.value = odo;
+    }
   }
 
-  /* Rebuild all road rows from a data array, preserving values */
-  function renderRoadFromData(data){
-    container.textContent = '';
-    var hs = homeState();
-    var crossingNum = 0;
-    data.forEach(function(d, i){
-      if(d.type === 'locked' && i === 0){
-        addLockedRow(i, 'Starting State', hs, 'Starting Odometer');
-      } else if(d.type === 'locked'){
-        addLockedRow(i, 'Ending State', hs, 'Ending Odometer');
-      } else {
-        crossingNum++;
-        addCrossingRow(i, crossingNum, d.state || null);
-      }
-      document.getElementById('odo_' + i).value = d.odo;
-    });
-    updateAllTransitions();
-    updateAddBtn();
+  function addEndingRow(){
+    var lbl = makeLabel(terminalName() + ' \u2014 Arrival');
+    lbl.id = 'endLabel';
+    container.appendChild(lbl);
+    var endRow = document.createElement('div');
+    endRow.className = 'crossing-row odo-single';
+    endRow.id = 'endRow';
+    endRow.appendChild(makeField('Ending Odometer', makeOdoInput('end_odo','e.g. 145796')));
+    container.appendChild(endRow);
+  }
+
+  function getLeavingCount(){
+    return container.querySelectorAll('[data-row-type="leaving"]').length;
   }
 
   function updateAddBtn(){
     if(mode !== 'road') return;
-    var totalRows = container.children.length;
-    var atMax = totalRows >= MAX_ROWS;
+    var count = getLeavingCount();
+    var atMax = count >= MAX_LEAVING;
     addCrossingBtn.disabled = atMax;
     if(atMax){
       addCrossingBtn.textContent = 'Max Crossings Reached';
     } else {
       addCrossingBtn.textContent = '';
       var svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
-      svg.setAttribute('width','16'); svg.setAttribute('height','16'); svg.setAttribute('viewBox','0 0 16 16'); svg.setAttribute('fill','none');
+      svg.setAttribute('width','16'); svg.setAttribute('height','16');
+      svg.setAttribute('viewBox','0 0 16 16'); svg.setAttribute('fill','none');
       var path = document.createElementNS('http://www.w3.org/2000/svg','path');
-      path.setAttribute('d','M8 3v10M3 8h10'); path.setAttribute('stroke','currentColor'); path.setAttribute('stroke-width','2'); path.setAttribute('stroke-linecap','round');
+      path.setAttribute('d','M8 3v10M3 8h10');
+      path.setAttribute('stroke','currentColor');
+      path.setAttribute('stroke-width','2');
+      path.setAttribute('stroke-linecap','round');
       svg.appendChild(path);
       addCrossingBtn.appendChild(svg);
       addCrossingBtn.appendChild(document.createTextNode(' Add Crossing'));
@@ -871,21 +739,15 @@ body::before{
 
   addCrossingBtn.addEventListener('click', function(){
     if(mode !== 'road') return;
-    if(container.children.length >= MAX_ROWS) return;
-
-    var data = gatherRowData();
-    var endRow = data.pop();
-    data.push({ type: 'crossing', state: '', odo: '' });
-    data.push(endRow);
-
-    renderRoadFromData(data);
-
-    var newIdx = data.length - 2;
-    var newInput = document.getElementById('odo_' + newIdx);
-    if(newInput) newInput.focus();
+    var count = getLeavingCount();
+    if(count >= MAX_LEAVING) return;
+    addLeavingRow(count);
+    updateAddBtn();
+    var inp = document.getElementById('leaving_state_'+count);
+    if(inp) inp.focus();
   });
 
-  /* ─── Local form ─── */
+  /* ─── Build Local Form ─── */
   function buildLocalRows(){
     formTitle.textContent = mode === 'local-la' ? 'Local Trip \u2014 California' : 'Local Trip \u2014 Nevada';
     terminalSelector.style.display = 'none';
@@ -893,12 +755,12 @@ body::before{
     buildDateRow();
     container.textContent = '';
     var div = document.createElement('div');
-    div.className = 'crossing-row local-mode';
-    div.appendChild(makeField('Starting Odometer', makeOdoInput('local_start', 'e.g. 10000')));
+    div.className = 'crossing-row odo-single';
+    div.appendChild(makeField('Starting Odometer', makeOdoInput('local_start','e.g. 10000')));
     container.appendChild(div);
     var div2 = document.createElement('div');
-    div2.className = 'crossing-row local-mode';
-    div2.appendChild(makeField('Ending Odometer', makeOdoInput('local_end', 'e.g. 10045')));
+    div2.className = 'crossing-row odo-single';
+    div2.appendChild(makeField('Ending Odometer', makeOdoInput('local_end','e.g. 10045')));
     container.appendChild(div2);
   }
 
@@ -911,7 +773,7 @@ body::before{
   }
   resetBtn.addEventListener('click', resetForm);
 
-  /* ─── Error handling ─── */
+  /* ─── Errors ─── */
   function showError(msg){
     errorText.textContent = msg;
     errorMsg.classList.add('show');
@@ -923,82 +785,63 @@ body::before{
   }
 
   /* ─── Calculate ─── */
-  calcBtn.addEventListener('click', calculate);
-
-  function calculate(){
+  calcBtn.addEventListener('click', function(){
     hideError();
     resultsCard.classList.remove('show');
     if(mode === 'road') calcRoad();
     else calcLocal();
-  }
+  });
 
   function calcRoad(){
-    var rows = container.children;
-    var totalRows = rows.length;
-    if(totalRows < 3){
-      showError('Need at least a start, one crossing, and an end.');
-      return;
+    var startEl = document.getElementById('start_odo');
+    var endEl = document.getElementById('end_odo');
+    var startVal = startEl.value.trim();
+    var endVal = endEl.value.trim();
+
+    if(!startVal){ startEl.classList.add('error'); showError('Enter starting odometer.'); return; }
+    if(!endVal){ endEl.classList.add('error'); showError('Enter ending odometer.'); return; }
+
+    var startOdo = parseFloat(startVal);
+    var endOdo = parseFloat(endVal);
+    if(isNaN(startOdo)||startOdo<0){ startEl.classList.add('error'); showError('Starting odometer must be a positive number.'); return; }
+    if(isNaN(endOdo)||endOdo<0){ endEl.classList.add('error'); showError('Ending odometer must be a positive number.'); return; }
+
+    var count = getLeavingCount();
+    if(count < 1){ showError('Add at least one leaving state.'); return; }
+
+    // Collect leaving rows
+    var leavings = [];
+    var prevOdo = startOdo;
+    for(var i = 0; i < count; i++){
+      var stSel = document.getElementById('leaving_state_'+i);
+      var odEl = document.getElementById('leaving_odo_'+i);
+      if(!stSel || !odEl){ showError('Missing crossing data.'); return; }
+      var odVal = odEl.value.trim();
+      if(!odVal){ odEl.classList.add('error'); showError('Enter odometer for each state crossing.'); return; }
+      var odNum = parseFloat(odVal);
+      if(isNaN(odNum)||odNum<0){ odEl.classList.add('error'); showError('Odometer must be a positive number.'); return; }
+      if(odNum <= prevOdo){ odEl.classList.add('error'); showError('Odometer at crossing '+(i+1)+' must be greater than '+prevOdo.toLocaleString()+'.'); return; }
+      leavings.push({ state: stSel.value, odo: odNum });
+      prevOdo = odNum;
     }
 
-    var states = [];
-    var odos = [];
-    var valid = true;
-    var hs = homeState();
+    if(endOdo <= prevOdo){ endEl.classList.add('error'); showError('Ending odometer must be greater than last crossing ('+prevOdo.toLocaleString()+').'); return; }
 
-    for(var i = 0; i < totalRows; i++){
-      var isLocked = rows[i].dataset.rowType === 'locked';
-      var stateVal;
-      if(isLocked){
-        stateVal = hs;
-      } else {
-        var grid = document.getElementById('grid_' + i);
-        var activeBtn = grid ? grid.querySelector('.state-grid-btn.active') : null;
-        if(!activeBtn){
-          showError('Please select a state at crossing ' + i + '.');
-          valid = false;
-          break;
-        }
-        stateVal = activeBtn.dataset.state;
-      }
-      var odoEl = document.getElementById('odo_' + i);
-      var odoVal = odoEl.value.trim();
-
-      if(!odoVal){
-        odoEl.classList.add('error');
-        showError('Please enter all odometer readings.');
-        valid = false;
-        break;
-      }
-
-      var odoNum = parseFloat(odoVal);
-      if(isNaN(odoNum) || odoNum < 0){
-        odoEl.classList.add('error');
-        showError('Odometer readings must be positive numbers.');
-        valid = false;
-        break;
-      }
-
-      if(i > 0 && odoNum <= odos[i-1]){
-        odoEl.classList.add('error');
-        showError('Odometer reading in row ' + (i+1) + ' must be greater than the previous reading (' + odos[i-1].toLocaleString() + ').');
-        valid = false;
-        break;
-      }
-
-      states.push(stateVal);
-      odos.push(odoNum);
-    }
-
-    if(!valid) return;
-
+    // Calculate miles per state
     var milesByState = {};
-    for(var j = 1; j < odos.length; j++){
-      var miles = odos[j] - odos[j-1];
-      var throughState = states[j-1];
-      milesByState[throughState] = (milesByState[throughState] || 0) + miles;
+    var prev = startOdo;
+    for(var j = 0; j < leavings.length; j++){
+      var miles = leavings[j].odo - prev;
+      var st = leavings[j].state;
+      milesByState[st] = (milesByState[st]||0) + miles;
+      prev = leavings[j].odo;
     }
+    // Final segment: back to home state
+    var finalMiles = endOdo - prev;
+    var hs = homeState();
+    milesByState[hs] = (milesByState[hs]||0) + finalMiles;
 
-    showResults(milesByState, odos[0], odos[odos.length - 1]);
+    showResults(milesByState, startOdo, endOdo);
   }
 
   function calcLocal(){
@@ -1007,31 +850,17 @@ body::before{
     var startVal = startEl.value.trim();
     var endVal = endEl.value.trim();
 
-    if(!startVal || !endVal){
+    if(!startVal||!endVal){
       if(!startVal) startEl.classList.add('error');
       if(!endVal) endEl.classList.add('error');
-      showError('Please enter both starting and ending odometer readings.');
+      showError('Enter both starting and ending odometer.');
       return;
     }
-
     var startNum = parseFloat(startVal);
     var endNum = parseFloat(endVal);
-
-    if(isNaN(startNum) || startNum < 0){
-      startEl.classList.add('error');
-      showError('Starting odometer must be a positive number.');
-      return;
-    }
-    if(isNaN(endNum) || endNum < 0){
-      endEl.classList.add('error');
-      showError('Ending odometer must be a positive number.');
-      return;
-    }
-    if(endNum <= startNum){
-      endEl.classList.add('error');
-      showError('Ending odometer must be greater than starting odometer.');
-      return;
-    }
+    if(isNaN(startNum)||startNum<0){ startEl.classList.add('error'); showError('Starting odometer must be positive.'); return; }
+    if(isNaN(endNum)||endNum<0){ endEl.classList.add('error'); showError('Ending odometer must be positive.'); return; }
+    if(endNum<=startNum){ endEl.classList.add('error'); showError('Ending must be greater than starting odometer.'); return; }
 
     var state = mode === 'local-la' ? 'CA' : 'NV';
     var obj = {};
@@ -1039,11 +868,12 @@ body::before{
     showResults(obj, startNum, endNum);
   }
 
+  /* ─── Results ─── */
   function showResults(milesByState, startOdo, endOdo){
     resultsBody.textContent = '';
     var total = 0;
-    var entries = Object.entries(milesByState).sort(function(a,b){ return b[1] - a[1]; });
-    entries.forEach(function(entry){ total += entry[1]; });
+    var entries = Object.entries(milesByState).sort(function(a,b){ return b[1]-a[1]; });
+    entries.forEach(function(e){ total += e[1]; });
 
     var dualUtFuel = (total > 600 && milesByState['UT']);
 
@@ -1053,8 +883,7 @@ body::before{
 
       var td1 = document.createElement('td');
       var badge = document.createElement('span');
-      badge.className = 'state-badge';
-      badge.textContent = st;
+      badge.className = 'state-badge'; badge.textContent = st;
       td1.appendChild(badge);
 
       var td2 = document.createElement('td');
@@ -1066,81 +895,66 @@ body::before{
 
       if(st === 'UT' && dualUtFuel){
         var inp1 = document.createElement('input');
-        inp1.type = 'number'; inp1.className = 'fuel-input';
-        inp1.id = 'fuel_UT_1'; inp1.placeholder = 'Stop 1';
-        inp1.setAttribute('inputmode', 'decimal');
+        inp1.type='number'; inp1.className='fuel-input';
+        inp1.id='fuel_UT_1'; inp1.placeholder='Stop 1';
+        inp1.setAttribute('inputmode','decimal');
         var inp2 = document.createElement('input');
-        inp2.type = 'number'; inp2.className = 'fuel-input';
-        inp2.id = 'fuel_UT_2'; inp2.placeholder = 'Stop 2';
-        inp2.setAttribute('inputmode', 'decimal');
-        inp2.style.marginTop = '6px';
-        td3.appendChild(inp1);
-        td3.appendChild(inp2);
+        inp2.type='number'; inp2.className='fuel-input';
+        inp2.id='fuel_UT_2'; inp2.placeholder='Stop 2';
+        inp2.setAttribute('inputmode','decimal');
+        inp2.style.marginTop='6px';
+        td3.appendChild(inp1); td3.appendChild(inp2);
       } else {
         var fuelInp = document.createElement('input');
-        fuelInp.type = 'number'; fuelInp.className = 'fuel-input';
-        fuelInp.id = 'fuel_' + st; fuelInp.placeholder = '-';
-        fuelInp.setAttribute('inputmode', 'decimal');
+        fuelInp.type='number'; fuelInp.className='fuel-input';
+        fuelInp.id='fuel_'+st; fuelInp.placeholder='-';
+        fuelInp.setAttribute('inputmode','decimal');
         td3.appendChild(fuelInp);
       }
 
-      tr.appendChild(td1);
-      tr.appendChild(td2);
-      tr.appendChild(td3);
+      tr.appendChild(td1); tr.appendChild(td2); tr.appendChild(td3);
       resultsBody.appendChild(tr);
     });
 
     var totalTr = document.createElement('tr');
     totalTr.className = 'total-row';
-    var ttd1 = document.createElement('td');
-    ttd1.textContent = 'Total';
-    var ttd2 = document.createElement('td');
-    ttd2.className = 'col-miles';
-    ttd2.textContent = formatMiles(total);
+    var ttd1 = document.createElement('td'); ttd1.textContent = 'Total';
+    var ttd2 = document.createElement('td'); ttd2.className='col-miles'; ttd2.textContent=formatMiles(total);
     var ttd3 = document.createElement('td');
-    totalTr.appendChild(ttd1);
-    totalTr.appendChild(ttd2);
-    totalTr.appendChild(ttd3);
+    totalTr.appendChild(ttd1); totalTr.appendChild(ttd2); totalTr.appendChild(ttd3);
     resultsBody.appendChild(totalTr);
 
-    // ─── Build clipboard row ───
     buildClipboard(milesByState, startOdo, endOdo);
-
     resultsCard.classList.add('show');
     resultsCard.scrollIntoView({ behavior:'smooth', block:'nearest' });
   }
 
+  /* ─── Clipboard ─── */
   function getTripNumber(){
     var dateEl = document.getElementById('tripDate');
     var dateVal = dateEl ? dateEl.value : '';
     var prefix = mode === 'road' ? 'R' : 'L';
     if(dateVal){
-      var parts = dateVal.split('-'); // YYYY-MM-DD
+      var parts = dateVal.split('-');
       return prefix + parts[1] + '.' + parts[2] + '.' + parts[0].slice(2);
     }
-    // Fallback: today's date
     var d = new Date();
-    var mm = String(d.getMonth()+1).padStart(2,'0');
-    var dd = String(d.getDate()).padStart(2,'0');
-    var yy = String(d.getFullYear()).slice(2);
-    return prefix + mm + '.' + dd + '.' + yy;
+    return prefix + String(d.getMonth()+1).padStart(2,'0') + '.' + String(d.getDate()).padStart(2,'0') + '.' + String(d.getFullYear()).slice(2);
   }
 
-  function fmtOdo(n){ return n.toLocaleString('en-US', { maximumFractionDigits: 0 }); }
+  function fmtOdo(n){ return n.toLocaleString('en-US',{maximumFractionDigits:0}); }
 
   function getFuel(st){
-    // Handle dual UT fuel stops
-    var el1 = document.getElementById('fuel_' + st + '_1');
-    var el2 = document.getElementById('fuel_' + st + '_2');
-    if(el1 || el2){
-      var v1 = (el1 && el1.value.trim()) ? parseFloat(el1.value.trim()) : 0;
-      var v2 = (el2 && el2.value.trim()) ? parseFloat(el2.value.trim()) : 0;
-      var sum = v1 + v2;
+    var el1 = document.getElementById('fuel_'+st+'_1');
+    var el2 = document.getElementById('fuel_'+st+'_2');
+    if(el1||el2){
+      var v1 = (el1&&el1.value.trim()) ? parseFloat(el1.value.trim()) : 0;
+      var v2 = (el2&&el2.value.trim()) ? parseFloat(el2.value.trim()) : 0;
+      var sum = v1+v2;
       return sum > 0 ? String(sum) : '-';
     }
-    // Single input
-    var el = document.getElementById('fuel_' + st);
-    if(!el || !el.value.trim()) return '-';
+    var el = document.getElementById('fuel_'+st);
+    if(!el||!el.value.trim()) return '-';
     return el.value.trim();
   }
 
@@ -1149,36 +963,26 @@ body::before{
     copyBtn.classList.remove('copied');
     copyBtn.textContent = 'Copy Row for Excel';
 
-    // Rebuild preview on every copy click (to pick up latest fuel values)
-    // Preview is static; TSV is built at copy time to capture fuel inputs
     var tripNum = getTripNumber();
-
     var previewCols = [
-      { label: 'Trip #', val: tripNum },
-      { label: 'Start', val: fmtOdo(startOdo) },
-      { label: 'End', val: fmtOdo(endOdo) }
+      {label:'Trip #', val:tripNum},
+      {label:'Start', val:fmtOdo(startOdo)},
+      {label:'End', val:fmtOdo(endOdo)}
     ];
     EXCEL_STATES.forEach(function(st){
       var miles = milesByState[st];
-      previewCols.push({ label: st + ' Mi', val: miles ? String(Math.round(miles)) : '-' });
-      previewCols.push({ label: st + ' Fuel', val: '\u2190 enter above' });
+      previewCols.push({label:st+' Mi', val: miles ? String(Math.round(miles)) : '-'});
+      previewCols.push({label:st+' Fuel', val:'\u2190 above'});
     });
 
     previewCols.forEach(function(c){
-      var cell = document.createElement('div');
-      cell.className = 'clipboard-cell';
-      var lbl = document.createElement('span');
-      lbl.className = 'col-label';
-      lbl.textContent = c.label;
-      var val = document.createElement('span');
-      val.className = 'col-val';
-      val.textContent = c.val;
-      cell.appendChild(lbl);
-      cell.appendChild(val);
+      var cell = document.createElement('div'); cell.className='clipboard-cell';
+      var lbl = document.createElement('span'); lbl.className='col-label'; lbl.textContent=c.label;
+      var val = document.createElement('span'); val.className='col-val'; val.textContent=c.val;
+      cell.appendChild(lbl); cell.appendChild(val);
       clipboardGrid.appendChild(cell);
     });
 
-    // Build TSV at copy time so fuel inputs are captured live
     copyBtn.onclick = function(){
       var tsvCols = [tripNum, String(startOdo), String(endOdo)];
       EXCEL_STATES.forEach(function(st){
@@ -1186,21 +990,16 @@ body::before{
         tsvCols.push(miles ? String(Math.round(miles)) : '-');
         tsvCols.push(getFuel(st));
       });
-      var tsv = tsvCols.join('\t');
-
-      navigator.clipboard.writeText(tsv).then(function(){
+      navigator.clipboard.writeText(tsvCols.join('\t')).then(function(){
         copyBtn.classList.add('copied');
         copyBtn.textContent = 'Copied!';
-        setTimeout(function(){
-          copyBtn.classList.remove('copied');
-          copyBtn.textContent = 'Copy Row for Excel';
-        }, 2000);
+        setTimeout(function(){ copyBtn.classList.remove('copied'); copyBtn.textContent='Copy Row for Excel'; }, 2000);
       });
     };
   }
 
   function formatMiles(n){
-    return n.toLocaleString('en-US', { maximumFractionDigits: 1 }) + ' mi';
+    return n.toLocaleString('en-US',{maximumFractionDigits:1})+' mi';
   }
 
   /* ─── Init ─── */
