@@ -384,30 +384,33 @@ body::before{
 
 /* ─── Clipboard Row ─── */
 .clipboard-row{
-  margin-top:18px;padding:14px;
-  background:var(--navy);border-radius:10px;
+  margin-top:20px;padding:0;
+  background:transparent;border-radius:0;
   position:relative;overflow:hidden;
 }
 .clipboard-preview{
-  font-family:'Space Mono',monospace;font-size:0.72rem;
-  color:var(--ice);line-height:1.7;
-  white-space:nowrap;overflow-x:auto;
-  padding-bottom:4px;
+  font-family:'Space Mono',monospace;font-size:0.68rem;
+  color:var(--navy);line-height:1.5;
+  overflow-x:auto;
+  padding:10px 12px;
+  background:var(--ice);border:1px solid var(--steel-light);
+  border-radius:8px;
   -webkit-overflow-scrolling:touch;
 }
 .clipboard-preview .col-label{
-  color:var(--steel-light);font-size:0.6rem;
-  display:block;letter-spacing:0.06em;
+  color:var(--steel);font-size:0.55rem;
+  display:block;letter-spacing:0.04em;text-transform:uppercase;
+  white-space:nowrap;
 }
-.clipboard-preview .col-val{color:var(--pure-white);font-weight:700}
+.clipboard-preview .col-val{color:var(--navy);font-weight:700;white-space:nowrap}
 .clipboard-grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fill, minmax(70px, 1fr));
-  gap:6px 12px;
+  display:flex;
+  gap:4px 14px;
+  flex-wrap:nowrap;
 }
-.clipboard-cell{text-align:center}
+.clipboard-cell{text-align:center;flex-shrink:0}
 .btn-copy{
-  margin-top:12px;width:100%;padding:12px;
+  margin-top:10px;width:100%;padding:12px;
   background:var(--accent);color:var(--navy);
   border:none;border-radius:8px;
   font-family:'DM Sans',sans-serif;font-size:0.9rem;font-weight:700;
@@ -487,8 +490,8 @@ body::before{
   <div class="card">
     <div class="card-title" id="formTitle">Trip Crossings</div>
     <div class="terminal-selector" id="terminalSelector" style="display:none">
-      <button class="terminal-btn active" data-terminal="la" data-state="CA">CA<span class="terminal-city">Los Angeles</span></button>
-      <button class="terminal-btn" data-terminal="lv" data-state="NV">NV<span class="terminal-city">Las Vegas</span></button>
+      <button class="terminal-btn" data-terminal="la" data-state="CA">CA<span class="terminal-city">Los Angeles</span></button>
+      <button class="terminal-btn active" data-terminal="lv" data-state="NV">NV<span class="terminal-city">Las Vegas</span></button>
     </div>
     <div id="dateRow"></div>
     <div class="error-msg" id="errorMsg">
@@ -532,7 +535,7 @@ body::before{
   var MAX_LEAVING = 6;
 
   var mode = 'road';
-  var terminal = 'la';
+  var terminal = 'lv';
 
   function homeState(){ return terminal === 'la' ? 'CA' : 'NV'; }
   function terminalName(){ return terminal === 'la' ? 'LA Terminal' : 'Las Vegas Terminal'; }
