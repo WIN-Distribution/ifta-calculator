@@ -222,6 +222,62 @@ body::before{
   margin-bottom:14px;
   animation:rowIn 0.3s cubic-bezier(0.22,1,0.36,1) forwards;
 }
+.crossing-row.crossing-interactive{
+  grid-template-columns:1fr;
+  background:var(--ice-light);
+  border-radius:10px;padding:14px;
+  border:1px solid var(--ice);
+}
+.crossing-inner{
+  display:grid;grid-template-columns:1fr auto;gap:12px;
+  align-items:start;
+}
+.crossing-transition{
+  font-size:0.78rem;font-weight:700;color:var(--steel);
+  margin-bottom:8px;display:flex;align-items:center;gap:6px;
+  letter-spacing:0.02em;
+}
+.crossing-transition .from-st{
+  background:var(--navy);color:var(--pure-white);
+  font-family:'Space Mono',monospace;font-size:0.72rem;font-weight:700;
+  padding:3px 8px;border-radius:5px;letter-spacing:0.06em;
+}
+.crossing-transition .arrow{color:var(--steel-light);font-size:1rem}
+.crossing-transition .to-st{
+  background:var(--accent);color:var(--navy);
+  font-family:'Space Mono',monospace;font-size:0.72rem;font-weight:700;
+  padding:3px 8px;border-radius:5px;letter-spacing:0.06em;
+}
+.crossing-transition .to-st.empty{
+  background:var(--ice);color:var(--steel);
+  font-style:italic;font-family:'DM Sans',sans-serif;
+  font-weight:500;font-size:0.72rem;
+}
+.state-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:6px;
+}
+.state-grid-btn{
+  padding:10px 4px;
+  border:2px solid var(--ice);border-radius:8px;
+  background:var(--pure-white);
+  font-family:'Space Mono',monospace;font-size:0.85rem;font-weight:700;
+  color:var(--navy);cursor:pointer;
+  transition:all 0.15s ease;
+  text-align:center;letter-spacing:0.04em;
+}
+.state-grid-btn:hover:not(.disabled):not(.active){
+  border-color:var(--steel-light);background:var(--white);
+  transform:scale(1.04);
+}
+.state-grid-btn.active{
+  background:var(--accent);border-color:var(--accent);
+  color:var(--navy);box-shadow:0 2px 8px rgba(240,168,48,0.3);
+  transform:scale(1.04);
+}
+.state-grid-btn.disabled{
+  opacity:0.25;cursor:not-allowed;
+  background:var(--ice-light);border-color:transparent;
+}
 @keyframes rowIn{
   from{opacity:0;transform:translateY(8px)}
   to{opacity:1;transform:translateY(0)}
@@ -233,7 +289,7 @@ body::before{
   letter-spacing:0.08em;text-transform:uppercase;
   color:var(--steel);
 }
-.field select,.field input[type="number"]{
+.field input[type="number"]{
   padding:12px 14px;
   border:2px solid var(--ice);border-radius:8px;
   font-family:'DM Sans',sans-serif;font-size:1rem;
@@ -242,20 +298,13 @@ body::before{
   outline:none;
   -moz-appearance:textfield;
 }
-.field select{
-  appearance:none;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%233a5a8c' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
-  background-repeat:no-repeat;
-  background-position:right 14px center;
-  padding-right:36px;
-}
 .field input[type="number"]::-webkit-inner-spin-button,
 .field input[type="number"]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
-.field select:focus,.field input:focus{
+.field input:focus{
   border-color:var(--steel-light);
   box-shadow:0 0 0 3px rgba(90,127,173,0.12);
 }
-.field select.error,.field input.error{
+.field input.error{
   border-color:var(--danger);
   box-shadow:0 0 0 3px rgba(224,82,82,0.10);
 }
@@ -429,6 +478,8 @@ body::before{
   .btn-row{flex-direction:column}
   .btn-actions{flex-direction:column}
   .crossing-row{gap:8px}
+  .crossing-inner{grid-template-columns:1fr}
+  .state-grid-btn{padding:12px 4px;font-size:0.9rem}
 }
 </style>
 </head>
@@ -582,20 +633,7 @@ body::before{
   });
 
   /* ─── Row builders (all content is from hardcoded constants) ─── */
-  function makeOption(val, selected){
-    var opt = document.createElement('option');
-    opt.value = val;
-    opt.textContent = val;
-    if(selected) opt.selected = true;
-    return opt;
-  }
 
-  function makeStateSelect(id, selectedState){
-    var sel = document.createElement('select');
-    sel.id = id;
-    STATES.forEach(function(s){ sel.appendChild(makeOption(s, s === selectedState)); });
-    return sel;
-  }
 
   function makeLockedDiv(state){
     var d = document.createElement('div');
@@ -636,14 +674,112 @@ body::before{
     container.appendChild(div);
   }
 
-  function addCrossingRow(index, crossingNum){
+  function getFromState(index){
+    // Walk backwards to find the previous row's state
+    var rows = container.children;
+    for(var i = index - 1; i >= 0; i--){
+      var row = rows[i];
+      if(!row) continue;
+      if(row.dataset.rowType === 'locked') return homeState();
+      var sel = row.querySelector('.state-grid-btn.active');
+      if(sel) return sel.dataset.state;
+    }
+    return homeState();
+  }
+
+  function addCrossingRow(index, crossingNum, selectedState){
     var div = document.createElement('div');
-    div.className = 'crossing-row';
+    div.className = 'crossing-row crossing-interactive';
     div.dataset.rowType = 'crossing';
-    var defaultState = STATES.find(function(s){ return s !== homeState(); }) || STATES[0];
-    div.appendChild(makeField('State at Crossing ' + crossingNum, makeStateSelect('state_' + index, defaultState)));
-    div.appendChild(makeField('Odometer at State Line', makeOdoInput('odo_' + index, 'e.g. 50270')));
+    div.dataset.index = index;
+
+    // Transition label
+    var transLabel = document.createElement('div');
+    transLabel.className = 'crossing-transition';
+    transLabel.id = 'trans_' + index;
+
+    // State grid
+    var gridWrap = document.createElement('div');
+    var grid = document.createElement('div');
+    grid.className = 'state-grid';
+    grid.id = 'grid_' + index;
+
+    STATES.forEach(function(st){
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'state-grid-btn';
+      btn.dataset.state = st;
+      btn.textContent = st;
+      if(selectedState && st === selectedState) btn.classList.add('active');
+      grid.appendChild(btn);
+    });
+
+    // Click handler for grid
+    grid.addEventListener('click', function(e){
+      var btn = e.target.closest('.state-grid-btn');
+      if(!btn || btn.classList.contains('disabled')) return;
+      grid.querySelectorAll('.state-grid-btn').forEach(function(b){ b.classList.remove('active'); });
+      btn.classList.add('active');
+      updateAllTransitions();
+      // Auto-focus odometer if empty
+      var odoEl = document.getElementById('odo_' + index);
+      if(odoEl && !odoEl.value) odoEl.focus();
+    });
+
+    // Odometer
+    var odoField = makeField('Odometer at State Line', makeOdoInput('odo_' + index, 'e.g. 50270'));
+
+    var inner = document.createElement('div');
+    inner.className = 'crossing-inner';
+    gridWrap.appendChild(grid);
+    inner.appendChild(gridWrap);
+    inner.appendChild(odoField);
+
+    div.appendChild(transLabel);
+    div.appendChild(inner);
     container.appendChild(div);
+  }
+
+  function updateAllTransitions(){
+    var rows = container.children;
+    for(var i = 0; i < rows.length; i++){
+      var row = rows[i];
+      if(row.dataset.rowType !== 'crossing') continue;
+      var idx = parseInt(row.dataset.index);
+      var trans = document.getElementById('trans_' + idx);
+      var grid = document.getElementById('grid_' + idx);
+      if(!trans || !grid) continue;
+
+      var fromState = getFromState(idx);
+      var activeBtn = grid.querySelector('.state-grid-btn.active');
+      var toState = activeBtn ? activeBtn.dataset.state : null;
+
+      // Update transition label
+      trans.textContent = '';
+      var fromSpan = document.createElement('span');
+      fromSpan.className = 'from-st';
+      fromSpan.textContent = fromState;
+      var arrow = document.createElement('span');
+      arrow.className = 'arrow';
+      arrow.textContent = '\u2192';
+      var toSpan = document.createElement('span');
+      if(toState){
+        toSpan.className = 'to-st';
+        toSpan.textContent = toState;
+      } else {
+        toSpan.className = 'to-st empty';
+        toSpan.textContent = 'tap state';
+      }
+      trans.appendChild(fromSpan);
+      trans.appendChild(arrow);
+      trans.appendChild(toSpan);
+
+      // Disable the "from" state in the grid
+      grid.querySelectorAll('.state-grid-btn').forEach(function(btn){
+        btn.classList.remove('disabled');
+        if(btn.dataset.state === fromState) btn.classList.add('disabled');
+      });
+    }
   }
 
   /* ─── Road form: [Start locked] [Crossings...] [End locked] ─── */
@@ -668,8 +804,9 @@ body::before{
     container.textContent = '';
     var hs = homeState();
     addLockedRow(0, 'Starting State', hs, 'Starting Odometer');
-    addCrossingRow(1, 1);
+    addCrossingRow(1, 1, null);
     addLockedRow(2, 'Ending State', hs, 'Ending Odometer');
+    updateAllTransitions();
     updateAddBtn();
   }
 
@@ -684,8 +821,10 @@ body::before{
       if(type === 'locked'){
         data.push({ type: 'locked', odo: odoVal });
       } else {
-        var stateEl = document.getElementById('state_' + i);
-        data.push({ type: 'crossing', state: stateEl ? stateEl.value : '', odo: odoVal });
+        var grid = document.getElementById('grid_' + i);
+        var activeBtn = grid ? grid.querySelector('.state-grid-btn.active') : null;
+        var stateVal = activeBtn ? activeBtn.dataset.state : '';
+        data.push({ type: 'crossing', state: stateVal, odo: odoVal });
       }
     }
     return data;
@@ -703,12 +842,11 @@ body::before{
         addLockedRow(i, 'Ending State', hs, 'Ending Odometer');
       } else {
         crossingNum++;
-        addCrossingRow(i, crossingNum);
-        var sel = document.getElementById('state_' + i);
-        if(sel && d.state) sel.value = d.state;
+        addCrossingRow(i, crossingNum, d.state || null);
       }
       document.getElementById('odo_' + i).value = d.odo;
     });
+    updateAllTransitions();
     updateAddBtn();
   }
 
@@ -737,8 +875,7 @@ body::before{
 
     var data = gatherRowData();
     var endRow = data.pop();
-    var defaultState = STATES.find(function(s){ return s !== homeState(); }) || STATES[0];
-    data.push({ type: 'crossing', state: defaultState, odo: '' });
+    data.push({ type: 'crossing', state: '', odo: '' });
     data.push(endRow);
 
     renderRoadFromData(data);
@@ -810,7 +947,19 @@ body::before{
 
     for(var i = 0; i < totalRows; i++){
       var isLocked = rows[i].dataset.rowType === 'locked';
-      var stateVal = isLocked ? hs : document.getElementById('state_' + i).value;
+      var stateVal;
+      if(isLocked){
+        stateVal = hs;
+      } else {
+        var grid = document.getElementById('grid_' + i);
+        var activeBtn = grid ? grid.querySelector('.state-grid-btn.active') : null;
+        if(!activeBtn){
+          showError('Please select a state at crossing ' + i + '.');
+          valid = false;
+          break;
+        }
+        stateVal = activeBtn.dataset.state;
+      }
       var odoEl = document.getElementById('odo_' + i);
       var odoVal = odoEl.value.trim();
 
