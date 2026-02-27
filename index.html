@@ -409,8 +409,21 @@ body::before{
   flex-wrap:nowrap;
 }
 .clipboard-cell{text-align:center;flex-shrink:0}
+.preview-toggle{margin-top:10px}
+.preview-toggle summary{
+  font-family:'DM Sans',sans-serif;font-size:0.75rem;
+  color:var(--steel);cursor:pointer;
+  list-style:none;display:flex;align-items:center;gap:5px;
+  padding:4px 0;user-select:none;
+}
+.preview-toggle summary::-webkit-details-marker{display:none}
+.preview-toggle summary::before{
+  content:'▸';font-size:0.7rem;transition:transform 0.2s;
+}
+.preview-toggle[open] summary::before{transform:rotate(90deg)}
+.preview-toggle .clipboard-preview{margin-top:6px}
 .btn-copy{
-  margin-top:10px;width:100%;padding:12px;
+  width:100%;padding:12px;
   background:var(--accent);color:var(--navy);
   border:none;border-radius:8px;
   font-family:'DM Sans',sans-serif;font-size:0.9rem;font-weight:700;
@@ -519,8 +532,11 @@ body::before{
       <tbody id="resultsBody"></tbody>
     </table>
     <div class="clipboard-row" id="clipboardRow">
-      <div class="clipboard-grid" id="clipboardGrid" style="display:none"></div>
       <button class="btn-copy" id="copyBtn">Copy Row for Excel</button>
+      <details class="preview-toggle">
+        <summary>Preview Excel Output</summary>
+        <div class="clipboard-preview"><div class="clipboard-grid" id="clipboardGrid"></div></div>
+      </details>
     </div>
   </div>
 </div>
