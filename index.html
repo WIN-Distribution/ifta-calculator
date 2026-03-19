@@ -579,7 +579,8 @@ body::before{
   var clipboardGrid = document.getElementById('clipboardGrid');
   var copyBtn = document.getElementById('copyBtn');
 
-  var EXCEL_STATES = ['AZ','CA','CO','ID','NV','UT','WY'];
+  var EXCEL_STATES = ['AZ','CA','ID','NV','UT'];
+  var EXCEL_OPTIONAL = ['WY','CO'];
 
   /* ─── Login ─── */
   function tryLogin(){
@@ -1000,7 +1001,10 @@ body::before{
       {label:'Start', val:fmtOdo(startOdo)},
       {label:'End', val:fmtOdo(endOdo)}
     ];
-    EXCEL_STATES.forEach(function(st){
+    var excelCols = EXCEL_STATES.slice();
+    EXCEL_OPTIONAL.forEach(function(st){ if(milesByState[st]) excelCols.push(st); });
+
+    excelCols.forEach(function(st){
       var miles = milesByState[st];
       previewCols.push({label:st+' Mi', val: miles ? String(Math.round(miles)) : '-'});
       previewCols.push({label:st+' Fuel', val:'\u2190 above'});
@@ -1016,7 +1020,7 @@ body::before{
 
     copyBtn.onclick = function(){
       var tsvCols = [tripNum, String(startOdo), String(endOdo)];
-      EXCEL_STATES.forEach(function(st){
+      excelCols.forEach(function(st){
         var miles = milesByState[st];
         tsvCols.push(miles ? String(Math.round(miles)) : '-');
         tsvCols.push(getFuel(st));
