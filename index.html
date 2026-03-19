@@ -494,7 +494,7 @@ body::before{
 
   <!-- Toggle -->
   <div class="toggle-group" id="modeToggle">
-    <button class="toggle-btn active" data-mode="road">Road Driver</button>
+    <button class="toggle-btn active" data-mode="road">Linehaul Driver</button>
     <button class="toggle-btn" data-mode="local-la">Local Driver LA</button>
     <button class="toggle-btn" data-mode="local-lv">Local Driver LV</button>
   </div>
@@ -546,7 +546,7 @@ body::before{
   'use strict';
   /* All DOM content built from hardcoded constants — no user input rendered as HTML */
 
-  var STATES = ['NV','CA','AZ','UT','CO','ID'];
+  var STATES = ['NV','CA','AZ','UT','CO','ID','WY'];
   var PASSWORD = 'win2026';
   var MAX_LEAVING = 6;
 
@@ -577,7 +577,7 @@ body::before{
   var clipboardGrid = document.getElementById('clipboardGrid');
   var copyBtn = document.getElementById('copyBtn');
 
-  var EXCEL_STATES = ['AZ','CA','ID','NV','UT'];
+  var EXCEL_STATES = ['AZ','CA','CO','ID','NV','UT','WY'];
 
   /* ─── Login ─── */
   function tryLogin(){
