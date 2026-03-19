@@ -502,11 +502,12 @@ body::before{
   <!-- Form Card -->
   <div class="card">
     <div class="card-title" id="formTitle">Trip Crossings</div>
+    <div id="dateRow"></div>
+    <div class="section-label" id="departLabel" style="display:none">Depart From:</div>
     <div class="terminal-selector" id="terminalSelector" style="display:none">
       <button class="terminal-btn" data-terminal="la" data-state="CA">CA<span class="terminal-city">Los Angeles</span></button>
       <button class="terminal-btn active" data-terminal="lv" data-state="NV">NV<span class="terminal-city">Las Vegas</span></button>
     </div>
-    <div id="dateRow"></div>
     <div class="error-msg" id="errorMsg">
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.5"/><path d="M8 4.5v4M8 10.5v.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
       <span id="errorText"></span>
@@ -564,6 +565,7 @@ body::before{
   var modeToggle = document.getElementById('modeToggle');
   var formTitle = document.getElementById('formTitle');
   var terminalSelector = document.getElementById('terminalSelector');
+  var departLabel = document.getElementById('departLabel');
   var dateRow = document.getElementById('dateRow');
   var container = document.getElementById('crossingsContainer');
   var addBtnContainer = document.getElementById('addBtnContainer');
@@ -672,6 +674,7 @@ body::before{
 
   function buildRoadRows(){
     formTitle.textContent = 'Trip Crossings';
+    departLabel.style.display = '';
     terminalSelector.style.display = '';
     addBtnContainer.style.display = '';
     buildDateRow();
@@ -768,6 +771,7 @@ body::before{
   /* ─── Build Local Form ─── */
   function buildLocalRows(){
     formTitle.textContent = mode === 'local-la' ? 'Local Trip \u2014 California' : 'Local Trip \u2014 Nevada';
+    departLabel.style.display = 'none';
     terminalSelector.style.display = 'none';
     addBtnContainer.style.display = 'none';
     buildDateRow();
